@@ -49,6 +49,9 @@ def create_agent_app(
         state_updates = {}
 
         if discarded_msgs:
+            import sys
+            sys.stdout.write("\r\033[K \033[38;5;141m[ ⚙️   正在更新上下文记忆... ]\033[0m\n")
+            sys.stdout.flush()
             discarded_text = "\n".join([f"{m.type}: {m.content}" for m in discarded_msgs if m.content])
         
             summary_prompt = (
