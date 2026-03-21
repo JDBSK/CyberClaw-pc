@@ -49,7 +49,6 @@ def create_agent_app(
         state_updates = {}
 
         if discarded_msgs:
-            print("\n到达记忆水位线, 正在将早期对话写入摘要记忆")
             discarded_text = "\n".join([f"{m.type}: {m.content}" for m in discarded_msgs if m.content])
         
             summary_prompt = (
@@ -63,7 +62,7 @@ def create_agent_app(
                 )
         
             # 这里可以用便宜模型
-            new_summary_response = llm.invoke([HumanMessage(content=summary_prompt)])
+            new_summary_response = llm.invoke([HumanMessage(content=summary_prompt)], config={"callbacks":[]})
             active_summary = new_summary_response.content
 
             # 更新摘要
@@ -79,7 +78,7 @@ def create_agent_app(
         profile_path = os.path.join(MEMORY_DIR, "user_profile.md")
         profile_content = "暂无记录"
         if os.path.exists(profile_path):
-            with open(profile_path, "r", encoding="utf-8") as f:
+            with open(profile_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read().strip()
                 if content:
                     profile_content = content
@@ -105,6 +104,10 @@ def create_agent_app(
 
         msgs_for_llm = [SystemMessage(content=sys_prompt)] + \
         [m for m in final_msgs if not isinstance(m, SystemMessage)]
+
+        for m in msgs_for_llm:
+            if isinstance(m.content, str):
+                m.content = m.content.encode('utf-8', 'ignore').decode('utf-8')
 
         # 记录即将发送给发模型的消息 (监控Token)
         audit_logger.log_event(
