@@ -45,7 +45,7 @@ def create_agent_app(
                 )
 
         current_summary = state.get("summary", "")
-        final_msgs, discarded_msgs = trim_context_messages(raw_messages, trigger_turns=8, keep_turns=4)
+        final_msgs, discarded_msgs = trim_context_messages(raw_messages, trigger_turns=20, keep_turns=10)
         state_updates = {}
 
         if discarded_msgs:
