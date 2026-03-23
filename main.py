@@ -156,6 +156,8 @@ def main():
             
             is_first_token = True
             
+            agent_was_speaking = False  # 🌟 新增：追踪大模型是不是刚说完话，用来控制换行
+            
             for msg, metadata in app.stream(inputs, config=config, stream_mode="messages"):
                 
                 # 情况 A：如果消息来自大模型 (Agent)
@@ -163,10 +165,14 @@ def main():
                     
                     # 1. 拦截工具调用的意图
                     if getattr(msg, "tool_call_chunks", None):
-                        # 只有包含 name 的块才是工具调用的起始信号
                         name = msg.tool_call_chunks[0].get("name")
                         if name:
                             spinner.stop()
+                            # 🌟 修复 UI 瑕疵：如果它刚说了废话，强制换行，保持队形整洁
+                            if agent_was_speaking:
+                                print() 
+                                agent_was_speaking = False
+                                
                             print(f" \033[38;5;51m[ 唤醒内置工具 : {name} ]\033[0m")
                             spinner.message = "等待环境反馈..."
                             spinner.start()
@@ -174,23 +180,31 @@ def main():
                         
                     # 2. 拦截正常的文本 Token 并打字机输出
                     if msg.content:
-                        if is_first_token:
+                        # 🌟 终极修复：只要它开始说话，不管三七二十一，立刻干掉转圈圈！
+                        if spinner.is_running:
                             spinner.stop()
+                            
+                        if is_first_token:
                             print(f" \033[38;5;141m👾 CyberClaw\033[0m > \033[38;5;250m", end="")
                             is_first_token = False
                         
                         # end="" 防止换行, flush=True 强制立刻推送到屏幕
                         print(msg.content, end="", flush=True)
+                        agent_was_speaking = True # 标记它正在说话
 
                 # 情况 B：如果消息来自工具执行结果
                 elif isinstance(msg, ToolMessage):
                     spinner.stop()
+                    # 这里也可以加个 agent_was_speaking 判断，但通常工具前都有“唤醒”提示，所以这里自带换行了
                     print(f" \033[38;5;250m[ 工具执行完毕 ]\033[0m")            
                     spinner.message = "正在整合推理结果..."
                     spinner.start()
             
-            if not is_first_token:
+            # 对话结束收尾
+            if agent_was_speaking:
                 print("\033[0m") 
+            else:
+                print("\033[0m", end="")
             spinner.stop()
 
             PURPLE = '\033[38;5;141m'

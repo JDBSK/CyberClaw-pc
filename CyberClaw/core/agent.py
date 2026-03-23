@@ -34,14 +34,29 @@ def create_agent_app(
         raw_messages = state["messages"]
 
         # 记录工具调用结果
+        # if raw_messages:
+        #     last_msg = raw_messages[-1]
+        #     if last_msg.type == "tool":
+        #         audit_logger.log_event(
+        #             thread_id=thread_id,
+        #             event="tool_result",
+        #             tool=last_msg.name,
+        #             result_summary=last_msg.content[:200]
+        #         )
+
         if raw_messages:
-            last_msg = raw_messages[-1]
-            if last_msg.type == "tool":
+            recent_tool_msgs = []
+            for msg in reversed(raw_messages):
+                if msg.type == "tool":
+                    recent_tool_msgs.append(msg)
+                else:
+                    break
+            for msg in reversed(recent_tool_msgs):
                 audit_logger.log_event(
                     thread_id=thread_id,
                     event="tool_result",
-                    tool=last_msg.name,
-                    result_summary=last_msg.content[:200]
+                    tool = msg.name,
+                    result_summary = msg.content[:200]
                 )
 
         current_summary = state.get("summary", "")
