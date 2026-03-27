@@ -27,7 +27,11 @@ def main():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     
     memory = SqliteSaver(conn)
-    app = create_agent_app(provider_name='aliyun', model_name='glm-5', checkpointer=memory)
+
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+    current_provider = os.getenv("DEFAULT_PROVIDER", "aliyun")
+    current_model = os.getenv("DEFAULT_MODEL", "glm-5")
+    app = create_agent_app(provider_name=current_provider, model_name=current_model, checkpointer=memory)
     
     session_id = "test_user_lilei"
     config = {"configurable": {"thread_id": session_id}}
