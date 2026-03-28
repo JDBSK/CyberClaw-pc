@@ -42,12 +42,13 @@ def config_wizard():
     
     provider_raw = questionary.select(
         "选择你的模型提供商 (Provider):",
-        choices=["openai", "anthropic", "aliyun (openai compatible)","tencent (openai compatible)", "zhipu (openai compatible)", "ollama"],
+        choices=["openai", "anthropic", "aliyun (openai compatible)","tencent (openai compatible)", "z.ai (openai compatible)", "other (openai compatible)", "ollama"],
         style=cyber_style,
         instruction="(按上下键选择，回车确认)"
     ).ask()
 
     if not provider_raw:
+        console.print("[dim #8d52ff]✦ 录入中断，CyberClaw 配置已取消。[/dim #8d52ff]")
         return
 
     provider = provider_raw.split(" ")[0].strip()
@@ -58,6 +59,10 @@ def config_wizard():
         style=cyber_style
     ).ask()
 
+    if model_name is None:
+        console.print("[dim #8d52ff]✦ 录入中断，CyberClaw 配置已取消。[/dim #8d52ff]")
+        return
+
     api_key = ""
     env_key = ""
     if provider != "ollama":
@@ -67,9 +72,13 @@ def config_wizard():
             env_key = "ANTHROPIC_API_KEY"
 
         api_key = questionary.password(
-            f"输入你的 {env_key} (对应 {provider_raw})(无需引号):",
+            f"输入你的 {env_key} (对应 {provider_raw}):",
             style=cyber_style
         ).ask()
+
+        if api_key is None:
+            console.print("[dim #8d52ff]✦ 录入中断，CyberClaw 配置已取消。[/dim #8d52ff]")
+            return
 
     base_url = ""
     if provider in ["openai", "anthropic"]:
@@ -87,6 +96,10 @@ def config_wizard():
             "输入兼容 Base URL (不填直接回车将使用官方默认地址):",
             style=cyber_style
         ).ask()
+
+    if base_url is None:
+        console.print("[dim #8d52ff]✦ 录入中断，CyberClaw 配置已取消。[/dim #8d52ff]")
+        return
 
     console.print("\n[dim]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/dim]")
 
@@ -142,7 +155,7 @@ def config_wizard():
 def _show_boot_error():
     console.print(Panel(
         "[bold #00ffff]CyberClaw未完成配置![/bold #00ffff]\n\n"
-        "[#8d52ff]检测到 API Key、模型或引擎标识丢失。请重新执行以下命令完成配置：[/#8d52ff]\n"
+        "[#8d52ff]检测到 API Key、模型或Baseurl。请重新执行以下命令完成配置：[/#8d52ff]\n"
         "[bold #00ffff]cyberclaw config[/bold #00ffff]",
         title="[bold #8d52ff]⚠️ Boot Sequence Failed[/bold #8d52ff]",
         border_style="#8d52ff"
@@ -158,7 +171,7 @@ def run_agent():
         _show_boot_error()
         raise typer.Exit()
     if provider != "ollama":
-        if provider in ["openai", "aliyun", "zhipu", "tencent"]: 
+        if provider in ["openai", "aliyun", "z.ai", "tencent", "other"]: 
             if not os.getenv("OPENAI_API_KEY"):
                 _show_boot_error()
                 raise typer.Exit()

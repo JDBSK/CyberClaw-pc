@@ -11,7 +11,8 @@ load_dotenv()
 COMPATIBLE_BASE_URLS = {
     "aliyun": "https://dashscope.aliyuncs.com/compatible-mode/v1",
     "dashscope": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    "zhipu": "https://open.bigmodel.cn/api/paas/v4"
+    "z.ai": "https://open.bigmodel.cn/api/paas/v4",
+    "tencent": "https://api.hunyuan.cloud.tencent.com/v1"
 }
 
 def get_provider(
@@ -23,11 +24,11 @@ def get_provider(
     **kwargs: Any
 ) -> BaseChatModel:
     """
-    模型适配器工厂 (支持万物归一的 OpenAI 协议)
+    模型适配器工厂
     """
     provider_name = provider_name.lower()
     
-    if provider_name in ["openai", "aliyun", "dashscope", "zhipu", "tencent"]:
+    if provider_name in ["openai", "aliyun", "dashscope", "z.ai", "tencent", "other"]:
         from langchain_openai import ChatOpenAI
         
         current_api_key = api_key or os.environ.get("OPENAI_API_KEY")
