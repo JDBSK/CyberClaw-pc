@@ -3,6 +3,9 @@ import subprocess
 from .base import cyberclaw_tool
 from ..config import OFFICE_DIR
 import re
+import platform
+
+SYS_OS = platform.system()
 
 def _get_safe_path(relative_path: str) -> str:
     """
@@ -104,22 +107,31 @@ def write_office_file(filepath: str, content: str, mode: str = "w") -> str:
     except Exception as e:
         return str(e)
     
+
 @cyberclaw_tool
 def execute_office_shell(command: str) -> str:
     """
     在 office 工位中执行 Shell 命令。
     
-    ⚠️ 【极其重要的环境限制 - 你必须遵守】：
-    1. 这是一个非交互式 (Non-interactive) 终端！不要运行任何需要等待用户输入（如 [y/N]、输入密码）的命令。所有安装命令必须携带免确认参数（如 -y, --yes, --quiet）。
-    2. 禁止使用 cd 命令跳出当前目录，你的活动范围仅限 office。
-    3. [无状态警告] 每次执行都是一个全新的独立终端进程！cd 命令的状态不会保留到下一次工具调用。
-       如果你想在子目录执行命令，请使用“命令链”（如 `cd skills && npm install`）或者“直接使用相对路径”（如 `python skills/test.py`）。
+    ⚠️ 【极其重要的环境限制】：
+    1. 💻 跨平台注意：当前宿主机可能是 Windows、Linux 或 Mac。请根据你得到的环境反馈，使用对应的原生 Shell 命令（例如 Win 用 dir/del，Linux 用 ls/rm）。如果命令报错，请自行调整重试！
+    2. 这是一个非交互式终端！所有命令必须携带免确认参数（如 -y, --quiet）。
+    3. 禁止使用 cd 命令跳出当前目录，你的活动范围仅限 office。
+    4. [无状态警告] 每次执行都是独立的终端进程！需要进入子目录请使用“命令链”或相对路径。
     """
     try:
-        dangerous_patterns = [r"cd\s+\.\.", r"cd\s+/", r"cd\s+~", r"\.\."]
+        dangerous_patterns = [
+            r"cd\s+\.\.",          # Unix/Win: 返回上一级
+            r"cd\s+/",             # Unix: 根目录
+            r"cd\s+~",             # Unix: 用户目录
+            r"\.\.",               # Unix/Win: 相对路径越权
+            r"cd\s+\\",            # Win: 根目录
+            r"(?i)[a-z]:\\",       # Win: 绝对盘符访问 (如 C:\, d:\)
+            r"(?i)cd\s+[a-z]:"     # Win: 跨盘符跳转 (如 cd D:)
+        ]
         for pattern in dangerous_patterns:
             if re.search(pattern, command):
-                return "❌ 权限拒绝：检测到危险的目录跳转指令。你被禁止离开 office 工位！"
+                return f"❌ 权限拒绝：检测到危险的目录跳转指令。你被禁止离开 office 工位！"
 
         result = subprocess.run(
             command,
@@ -128,17 +140,18 @@ def execute_office_shell(command: str) -> str:
             capture_output=True,
             encoding='utf-8',
             errors='replace',
-            timeout=60  # 60秒超时熔断
+            timeout=60
         )
         
-        output = f"▶️ 执行命令: `{command}`\n"
+        output = f"🖥️ [当前系统: {SYS_OS}]\n"
+        output += f"🔀 执行命令: `{command}`\n"
         output += f"🔄 退出码 (Exit Code): {result.returncode}\n"
         
         stdout = result.stdout.strip()
         stderr = result.stderr.strip()
         
         if result.returncode != 0 and ("prompt" in stderr.lower() or "y/n" in stdout.lower()):
-            output += "\n💡 系统提示：命令可能由于交互式等待而失败。请重试并务必添加 -y 类的免确认参数！"
+            output += "\n💡 系统提示：命令可能由于交互式等待而失败。请重试并添加 -y 参数！"
         
         if stdout:
             output += f"\n[STDOUT]\n{stdout[-2000:] if len(stdout) > 2000 else stdout}"
@@ -147,15 +160,13 @@ def execute_office_shell(command: str) -> str:
             
         if not stdout and not stderr:
             if result.returncode == 0:
-                output += "\n(静默执行完毕：Exit Code 为 0，无任何终端输出)"
+                output += "\n(静默执行完毕：无终端输出)"
             else:
-                output += "\n(异常退出：Exit Code 非 0，且无任何错误日志输出)"
+                output += "\n(异常退出：Exit Code 非 0，无错误日志输出)"
             
         return output
         
     except subprocess.TimeoutExpired:
-        return (f"❌ 严重错误：命令执行超过 60 秒已被熔断！\n"
-                f"原因极可能是你运行了阻塞式命令（需要按 Y 确认，或者跑了死循环）。"
-                f"请修改你的命令，确保使用静默/自动确认参数！")
+        return "❌ 严重错误：命令执行超时（60s）被熔断！请检查是否有阻塞式交互。"
     except Exception as e:
         return f"❌ 执行异常：{str(e)}"
