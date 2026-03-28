@@ -215,7 +215,7 @@ def main():
 
         except KeyboardInterrupt:
             print(f"\n {DIM}{PURPLE}{'━' * 78}{RESET}")
-            print("\n \033[38;5;141m✦ 强制中断，CyberClaw 进入休眠。\033[0m")
+            print("\n \033[38;5;141m✦   强制中断，CyberClaw 进入休眠。\033[0m")
             break
             
     conn.close()

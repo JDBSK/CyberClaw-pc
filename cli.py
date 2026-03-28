@@ -98,7 +98,7 @@ def config_wizard():
         ).ask()
 
     if base_url is None:
-        console.print("[dim #8d52ff]✦ 录入中断，CyberClaw 配置已取消。[/dim #8d52ff]")
+        console.print("[dim #8d52ff]✦   录入中断，CyberClaw 配置已取消。[/dim #8d52ff]")
         return
 
     console.print("\n[dim]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/dim]")
