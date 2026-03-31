@@ -84,6 +84,7 @@ def write_office_file(filepath: str, content: str, mode: str = "w") -> str:
     ⚠️ 智能体操作规范：
     1. 如果你要修改一个长文件中间的某几行，目前最安全的做法是：读取原文件，在你的内存中完成替换，然后用 "w" 模式把【完整的最新代码】重写进去。
     2. 如果你需要重命名文件或删除文件，请直接使用 execute_office_shell 工具执行 `mv` 或 `rm` 命令。
+    3. 禁止编写 与 跳出office工位 相关的任何语言脚本！
     """
     try:
         target_path = _get_safe_path(filepath)
@@ -118,16 +119,15 @@ def execute_office_shell(command: str) -> str:
     2. 这是一个非交互式终端！所有命令必须携带免确认参数（如 -y, --quiet）。
     3. 禁止使用 cd 命令跳出当前目录，你的活动范围仅限 office。
     4. [无状态警告] 每次执行都是独立的终端进程！需要进入子目录请使用“命令链”或相对路径。
+    5. 禁止一切形式跳出office工位!!! 例如运行跳出或查看office路径的任何脚本以及其他高危操作。
     """
     try:
         dangerous_patterns = [
-            r"cd\s+\.\.",          # Unix/Win: 返回上一级
-            r"cd\s+/",             # Unix: 根目录
-            r"cd\s+~",             # Unix: 用户目录
-            r"\.\.",               # Unix/Win: 相对路径越权
-            r"cd\s+\\",            # Win: 根目录
-            r"(?i)[a-z]:\\",       # Win: 绝对盘符访问 (如 C:\, d:\)
-            r"(?i)cd\s+[a-z]:"     # Win: 跨盘符跳转 (如 cd D:)
+            r"\.\.",                        # 杀招1：拦截所有相对路径越权 (如 ../)
+            r"(?:^|\s|[<>|&;])/",           # 杀招2：Unix 拦截绝对路径 (连 cat </etc/passwd 这种黑客写法也防了)
+            r"(?:^|\s|[<>|&;])~",           # 杀招3：Unix 拦截用户主目录 (防 ~/.ssh/)
+            r"(?:^|\s|[<>|&;])\\",          # 杀招4：Win 拦截根目录 (防 dir \)
+            r"(?i)(?:^|\s|[<>|&;])[a-z]:",  # 杀招5：Win 拦截直接跳盘符及绝对路径 (防 D:, type C:\...)
         ]
         for pattern in dangerous_patterns:
             if re.search(pattern, command):
