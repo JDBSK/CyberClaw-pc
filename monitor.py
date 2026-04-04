@@ -9,7 +9,7 @@ from rich.align import Align
 from rich import box
 from datetime import datetime
 
-# 🌟 赛博配色主题
+
 cyber_theme = Theme({
     "info": "dim cyan",
     "warning": "color(141)",
@@ -27,12 +27,12 @@ LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "loc
 def print_header():
     """渲染 简约斜体版·CyberClaw 监控面板"""
     
-    # 👾 极简 10 宽像素怪兽 (原生 75% 比例)
+    # 👾 极简 10 宽像素怪兽
     monster = (
-        "  ▄▄████▄▄  \n"
-        " ██████████ \n"
-        " ██▄████▄██ \n"
-        "  ▀      ▀  "
+        "  ▄█▄▄█▄  \n"
+        " ▀██████▀ \n"
+        " ██▄██▄██ \n"
+        "  ▀    ▀  "
     )
     
 
