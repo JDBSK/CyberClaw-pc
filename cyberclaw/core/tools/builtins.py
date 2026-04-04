@@ -14,6 +14,21 @@ PROFILE_PATH = os.path.join(MEMORY_DIR, "user_profile.md")
 
 
 @cyberclaw_tool
+def get_system_model_info() -> str:
+    """
+    获取当前 CyberClaw 正在运行的底层大模型（LLM）型号和提供商信息。
+    当用户询问“你是基于什么模型”、“你的底层大模型是什么”、“你是GPT还是GLM”、“现在用的什么模型”等身份问题时，调用此工具。
+    """
+    provider = os.getenv("DEFAULT_PROVIDER", "unknown")
+    model = os.getenv("DEFAULT_MODEL", "unknown")
+    
+    if provider == "unknown" or model == "unknown":
+        return "无法获取当前的系统模型配置，可能是环境变量未正确加载。"
+        
+    return f"当前使用的模型提供商(Provider)是: {provider}，具体型号(Model)是: {model}。"
+
+
+@cyberclaw_tool
 def save_user_profile(new_content: str) -> str:
     """
     更新用户的全局显性记忆档案。
@@ -65,5 +80,6 @@ BUILTIN_TOOLS = [
     list_office_files,
     read_office_file,
     write_office_file,
-    execute_office_shell
+    execute_office_shell,
+    get_system_model_info
 ]
