@@ -128,7 +128,6 @@ async def async_main():
 
         def get_bottom_toolbar():
             if not spinner.is_spinning:
-
                 return ANSI("") 
             
             elapsed = time.time() - spinner.start_time
@@ -222,8 +221,7 @@ async def async_main():
             
             while True:
                 try:
-                    with patch_stdout():
-                        user_input = await session.prompt_async(prompt_message, placeholder=placeholder_text)
+                    user_input = await session.prompt_async(prompt_message, placeholder=placeholder_text)
 
                     user_input = user_input.strip()
                     if not user_input:
@@ -245,12 +243,13 @@ async def async_main():
 
             redraw_task.cancel() 
 
-        worker = asyncio.create_task(agent_worker())
-        heartbeat_worker = asyncio.create_task(pacemaker_loop(check_interval=10))
-        await user_input_loop()
-        await task_queue.join()
-        worker.cancel()
-        heartbeat_worker.cancel()
+        with patch_stdout():
+            worker = asyncio.create_task(agent_worker())
+            heartbeat_worker = asyncio.create_task(pacemaker_loop(check_interval=10))
+            await user_input_loop()
+            await task_queue.join()
+            worker.cancel()
+            heartbeat_worker.cancel()
 
 def main():
     asyncio.run(async_main())
