@@ -1,10 +1,14 @@
 <div align="center">
 
-# 👾 CyberClaw
+![CyberClaw Logo](docs/cyber_logo.png)
 
-### 🕵️ **当 AI 开始"黑箱操作"，你需要一双透视眼**
+# CyberClaw
+
+###  **当 AI 开始"黑箱操作"，你需要一双透视眼**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
+[![LangGraph](https://img.shields.io/badge/LangGraph-1.x-blue.svg)](https://langchain-ai.github.io/langgraph/)
+[![LangChain](https://img.shields.io/badge/LangChain-1.x-blue.svg)](https://python.langchain.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen.svg)](tests/)
 [![GitHub](https://img.shields.io/badge/GitHub-@ttguy0707-black.svg?logo=github)](https://github.com/ttguy0707)
