@@ -654,7 +654,7 @@ MIT License
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ttguy0707/CyberClaw&type=Date&theme=dark)](https://star-history.com/#ttguy0707/CyberClaw&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=ttguy0707/CyberClaw&type=Date)](https://star-history.com/#ttguy0707/CyberClaw&Date)
 
 ---
 
