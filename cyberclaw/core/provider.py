@@ -74,6 +74,7 @@ def get_provider(
             model=model_name, 
             temperature=temperature, 
             base_url=final_base_url,
+            model_kwargs={"extra_body": {"thinking": {"type": "disabled"}}},  # 关闭deepseek思考模式，防止DeepSeek把历史消息传回给 API 时要求原封不动地把这个 reasoning_content 也带上 而出现不适配的问题
             **kwargs
         )
         
